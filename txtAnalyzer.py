@@ -110,9 +110,12 @@ def analyze_conversations(conversation_dir, contact_name):
     print("Word Frequency Them:\n", word_freq_them.most_common(20))
     print("Word Frequency Both:\n", word_freq_both.most_common(20))
     
+    # Define consistent colors
+    colors = {'Me': 'blue', full_contact_name: 'green'}
+    
     # Plot the character counts
     plt.figure(figsize=(10, 6))
-    plt.bar(character_counts['Sender'], character_counts['Text Length'], color=['green', 'blue'])
+    plt.bar(character_counts['Sender'], character_counts['Text Length'], color=[colors[sender] for sender in character_counts['Sender']])
     plt.xlabel('Sender')
     plt.ylabel('Total Characters')
     plt.title(f'Character Count by {full_contact_name} and Me')
@@ -121,7 +124,7 @@ def analyze_conversations(conversation_dir, contact_name):
 
     # Plot the message counts
     plt.figure(figsize=(10, 6))
-    plt.bar(message_counts['Sender'], message_counts['Message Count'], color=['green', 'blue'])
+    plt.bar(message_counts['Sender'], message_counts['Message Count'], color=[colors[sender] for sender in message_counts['Sender']])
     plt.xlabel('Sender')
     plt.ylabel('Number of Messages')
     plt.title(f'Message Count by {full_contact_name} and Me')
@@ -130,7 +133,7 @@ def analyze_conversations(conversation_dir, contact_name):
     
     # Plot the average sentiment
     plt.figure(figsize=(10, 6))
-    plt.bar(average_sentiment['Sender'], average_sentiment['Average Sentiment'], color=['green', 'blue'])
+    plt.bar(average_sentiment['Sender'], average_sentiment['Average Sentiment'], color=[colors[sender] for sender in average_sentiment['Sender']])
     plt.xlabel('Sender')
     plt.ylabel('Average Sentiment')
     plt.title(f'Average Sentiment by {full_contact_name} and Me')
@@ -139,7 +142,7 @@ def analyze_conversations(conversation_dir, contact_name):
 
     # Plot the emoji counts
     plt.figure(figsize=(10, 6))
-    plt.bar(emoji_counts['Sender'], emoji_counts['Total Emojis'], color=['green', 'blue'])
+    plt.bar(emoji_counts['Sender'], emoji_counts['Total Emojis'], color=[colors[sender] for sender in emoji_counts['Sender']])
     plt.xlabel('Sender')
     plt.ylabel('Total Emojis')
     plt.title(f'Emoji Count by {full_contact_name} and Me')
@@ -173,9 +176,18 @@ def analyze_conversations(conversation_dir, contact_name):
     plt.savefig(os.path.join(output_dir, 'wordcloud_both.png'))
     plt.show()
     
-
+    # Sentiment over time
+    df_filtered['Message Date'] = pd.to_datetime(df_filtered['Message Date'])
+    df_filtered.set_index('Message Date', inplace=True)
+    sentiment_over_time = df_filtered.resample('D')['Sentiment'].mean().reset_index()
     
-
+    plt.figure(figsize=(10, 6))
+    plt.plot(sentiment_over_time['Message Date'], sentiment_over_time['Sentiment'], marker='o', linestyle='-', color='purple')
+    plt.xlabel('Date')
+    plt.ylabel('Average Sentiment')
+    plt.title(f'Sentiment Over Time for {full_contact_name} and Me')
+    plt.savefig(os.path.join(output_dir, 'sentiment_over_time.png'))
+    plt.show()
     
     # Response time analysis
     df_filtered['Response Time'] = df_filtered['Message Date'].diff().dt.seconds
@@ -183,7 +195,7 @@ def analyze_conversations(conversation_dir, contact_name):
     response_times.columns = ['Sender', 'Average Response Time (seconds)']
     
     plt.figure(figsize=(10, 6))
-    plt.bar(response_times['Sender'], response_times['Average Response Time (seconds)'], color=['gray', 'blue'])
+    plt.bar(response_times['Sender'], response_times['Average Response Time (seconds)'], color=[colors[sender] for sender in response_times['Sender']])
     plt.xlabel('Sender')
     plt.ylabel('Average Response Time (seconds)')
     plt.title(f'Average Response Time by {full_contact_name} and Me')
@@ -192,11 +204,11 @@ def analyze_conversations(conversation_dir, contact_name):
     
     # Message length distribution
     plt.figure(figsize=(10, 6))
-    df_filtered['Text Length'].hist(by=df_filtered['Sender'], bins=30, edgecolor='black', figsize=(10, 6))
+    df_filtered['Text Length'].hist(by=df_filtered['Sender'], bins=30, edgecolor='black', figsize=(10, 6), color=[colors.get(x, 'black') for x in df_filtered['Sender'].unique()])
     plt.suptitle(f'Message Length Distribution for {full_contact_name} and Me')
     plt.savefig(os.path.join(output_dir, 'message_length_distribution.png'))
     plt.show()
-
+    
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("Usage: python analyze_conversations.py <conversation_dir> <contact_name>")

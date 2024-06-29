@@ -189,25 +189,8 @@ def analyze_conversations(conversation_dir, contact_name):
     plt.savefig(os.path.join(output_dir, 'sentiment_over_time.png'))
     plt.show()
     
-    # Response time analysis
-    df_filtered['Response Time'] = df_filtered['Message Date'].diff().dt.seconds
-    response_times = df_filtered.groupby('Sender')['Response Time'].mean().reset_index()
-    response_times.columns = ['Sender', 'Average Response Time (seconds)']
-    
-    plt.figure(figsize=(10, 6))
-    plt.bar(response_times['Sender'], response_times['Average Response Time (seconds)'], color=[colors[sender] for sender in response_times['Sender']])
-    plt.xlabel('Sender')
-    plt.ylabel('Average Response Time (seconds)')
-    plt.title(f'Average Response Time by {full_contact_name} and Me')
-    plt.savefig(os.path.join(output_dir, 'response_times.png'))
-    plt.show()
-    
-    # Message length distribution
-    plt.figure(figsize=(10, 6))
-    df_filtered['Text Length'].hist(by=df_filtered['Sender'], bins=30, edgecolor='black', figsize=(10, 6), color=[colors.get(x, 'black') for x in df_filtered['Sender'].unique()])
-    plt.suptitle(f'Message Length Distribution for {full_contact_name} and Me')
-    plt.savefig(os.path.join(output_dir, 'message_length_distribution.png'))
-    plt.show()
+
+  
     
 if __name__ == "__main__":
     if len(sys.argv) != 3:
